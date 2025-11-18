@@ -1,0 +1,46 @@
+# Build artifacts
+[Bb]in/
+[Oo]bj/
+[Bb]uild/
+[Bb]ld/
+artifacts/
+TestResults/
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# IDE settings
+.vs/
+.vscode/
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+*.nuget.props
+*.nuget.targets
+
+# Logs and diagnostics
+*.log
+*.tlog
+*.pidb
+*.svclog
+
+# OS files
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+# Resharper / Rider
+_ReSharper*/
+*.DotSettings.user
+.idea/
+
+# Tooling databases
+*.opendb
+*.dbmdl
