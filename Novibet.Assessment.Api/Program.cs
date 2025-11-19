@@ -1,11 +1,19 @@
 using Novibet.Assessment.Application.Interfaces;
 using Novibet.Assessment.Infrastructure;
+using Novibet.Assessment.Infrastructure.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddInfrastructure();
+builder.Configuration.AddUserSecrets<Program>();
+
+var sqlServerConnectionString = builder.Configuration.GetConnectionString("SqlServerConnectionString");
+
+if (string.IsNullOrWhiteSpace(sqlServerConnectionString))
+    throw new InvalidOperationException("Database connection string is missing. Add it in User Secrets.");
+
+builder.Services.AddInfrastructure(new InfrastructureSettings(sqlServerConnectionString));
 
 var app = builder.Build();
 

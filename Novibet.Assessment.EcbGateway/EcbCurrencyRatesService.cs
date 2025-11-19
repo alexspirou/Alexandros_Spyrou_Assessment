@@ -8,8 +8,8 @@ namespace Novibet.Assessment.EcbGateway;
 
 public class EcbCurrencyRatesService : ICurrencyRatesService
 {
-    //private const string RatesEndpoint = "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml";
-    private const string RatesEndpoint = "https://localhost:12345";
+    private const string RatesEndpoint = "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml";
+    //private const string RatesEndpoint = "https://localhost:12345";
     private readonly HttpClient _httpClient;
 
     public EcbCurrencyRatesService(HttpClient httpClient)
