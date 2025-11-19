@@ -1,7 +1,8 @@
-using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Novibet.Assessment.Application.Features.CurrencyRates;
 using Novibet.Assessment.EcbGateway;
+using Novibet.Assessment.Infrastructure.EfCore.Repositories;
 using Novibet.Assessment.Infrastructure.Options;
 using Novibet.Assessment.Infrastructure.Persistence;
 
@@ -20,6 +21,9 @@ public static class DependencyInjection
 
         services.AddDbContext<NovibetAssessmentDbContext>(options =>
             options.UseSqlServer(settings.SqlServerConnectionString));
+
+
+        services.AddScoped<ICurrencyRateRepository, CurrencyRateRepository>();
 
         return services;
     }

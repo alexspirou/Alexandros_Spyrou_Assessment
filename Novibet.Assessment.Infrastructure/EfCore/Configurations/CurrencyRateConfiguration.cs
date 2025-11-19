@@ -12,6 +12,10 @@ public class CurrencyRateConfiguration : IEntityTypeConfiguration<CurrencyRate>
 
         builder.HasKey(rate => rate.Id);
 
+        builder.Property(rate => rate.Id)
+            .ValueGeneratedOnAdd()
+            .HasDefaultValueSql("NEWID()");
+
         builder.HasIndex(rate => new { rate.CurrencyCode, rate.Date }).IsUnique();
 
         builder.Property(rate => rate.CurrencyCode)

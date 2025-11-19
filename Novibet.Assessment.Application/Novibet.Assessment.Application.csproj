@@ -7,11 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Novibet.Assessment.Domain\Novibet.Assessment.Domain.csproj" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Requests\" />
+        <ProjectReference Include="..\Novibet.Assessment.Domain\Novibet.Assessment.Domain.csproj" />
     </ItemGroup>
 
 </Project>

@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
-using Novibet.Assessment.Application.Interfaces;
+using Novibet.Assessment.Application.Features.CurrencyRates;
 using Polly;
 
 namespace Novibet.Assessment.EcbGateway;
