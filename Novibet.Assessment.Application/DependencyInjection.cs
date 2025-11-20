@@ -8,7 +8,7 @@ public static class DependencyInjection
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddScoped<ICurrencyRateUpdater, CurrencyRateUpdater>();
-        services.AddSingleton<TimeProvider>(_ => TimeProvider.System);
+        services.AddSingleton(_ => TimeProvider.System);
 
         return services;
     }
