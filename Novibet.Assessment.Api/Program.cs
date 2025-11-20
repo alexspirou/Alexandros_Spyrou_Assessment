@@ -1,4 +1,6 @@
 using Hangfire;
+using Novibet.Assessment.Api;
+using Novibet.Assessment.Api.Middleware;
 using Novibet.Assessment.Application;
 using Novibet.Assessment.Application.Features.CurrencyRates;
 using Novibet.Assessment.Infrastructure;
@@ -32,6 +34,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseExceptionHandling();
 
 AddBackgroundJobs(app.Services, builder.Configuration, backGroundWorkerSettings.Enabled);
 
@@ -47,6 +50,8 @@ app.MapGet("/ecb/test", async (ICurrencyRateUpdater updater, CancellationToken c
 })
 .WithName("TestEcbRates")
 .WithOpenApi();
+
+app.MapWalletEndpoints();
 
 
 app.Run();
@@ -87,5 +92,5 @@ static void AddInfrastucture(WebApplicationBuilder builder, bool backGroundServi
         .GetSection(HangfireOptions.OptionsPath)
         .Get<HangfireOptions>() ?? throw new InvalidOperationException("Hangfire options are missing. Ensure HangfireOptions exists in configuration.");
 
-    builder.Services.AddInfrastructure(new InfrastructureSettings(sqlServerConnectionString, hangfireOptions, backGroundServiceEnabled));
+    builder.Services.AddInfrastructure(new InfrastructureSettings(sqlServerConnectionString, backGroundServiceEnabled, hangfireOptions));
 }

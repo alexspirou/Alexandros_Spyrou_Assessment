@@ -8,13 +8,22 @@ namespace Novibet.Assessment.Infrastructure.EfCore.Repositories;
 
 public class CurrencyRateRepository : ICurrencyRateRepository
 {
-    private readonly NovibetAssessmentDbContext _context;
+    private readonly NovibetAssessmentDbContext _dbContext;
     private readonly TimeProvider _timeProvider;
 
     public CurrencyRateRepository(NovibetAssessmentDbContext context, TimeProvider timeProvider)
     {
-        _context = context;
+        _dbContext = context;
         _timeProvider = timeProvider;
+    }
+
+    public async Task<IDictionary<string, decimal>> GetCurrencyRates(IEnumerable<string> currencyCodes,
+        DateOnly date,
+        CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.CurrencyRates
+            .Where(x => currencyCodes.Contains(x.CurrencyCode) && x.Date == date)
+            .ToDictionaryAsync(x => x.CurrencyCode, x => x.Rate, cancellationToken);
     }
 
     public async Task<CurrencyRatesSaveResult> SaveCurrencyRatesAsync(
@@ -69,7 +78,7 @@ public class CurrencyRateRepository : ICurrencyRateRepository
                 VALUES (Source.CurrencyCode, Source.Rate, Source.Date, Source.LastUpdatedUtc);
         ";
 
-        var affectedRows = await _context.Database.ExecuteSqlRawAsync(
+        var affectedRows = await _dbContext.Database.ExecuteSqlRawAsync(
             sql,
             parameters.ToArray(),
             cancellationToken

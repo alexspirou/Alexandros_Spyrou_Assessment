@@ -4,6 +4,7 @@ using Hangfire.SqlServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Novibet.Assessment.Application.Features.CurrencyRates;
+using Novibet.Assessment.Application.Features.Wallets;
 using Novibet.Assessment.EcbGateway;
 using Novibet.Assessment.Infrastructure.BackgroundServices;
 using Novibet.Assessment.Infrastructure.BackgroundServices.Hangfire;
@@ -27,9 +28,9 @@ public static class DependencyInjection
         services.AddDbContext<NovibetAssessmentDbContext>(options =>
             options.UseSqlServer(infraSettings.SqlServerConnectionString));
 
-        var hangfireOptions = infraSettings.Hangfire ?? new HangfireOptions();
+        var hangfireOptions = infraSettings.Hangfire;
 
-        if (infraSettings.BackgroundServiceEnabled)
+        if (hangfireOptions is not null && infraSettings.BackgroundServiceEnabled)
         {
             AddHangFire(services, infraSettings, hangfireOptions);
             services.AddScoped<IJobRegistration, CurrencyRateHangfireJobs>();
@@ -37,6 +38,7 @@ public static class DependencyInjection
         }
 
         services.AddScoped<ICurrencyRateRepository, CurrencyRateRepository>();
+        services.AddScoped<IWalletRepository, EfWalletRepository>();
 
         return services;
     }
@@ -45,8 +47,6 @@ public static class DependencyInjection
     {
         services.AddHangfire((configuration, hangfireConfig) =>
         {
-
-
             switch (hangfireOptions.JobStorageMode)
             {
                 case JobStorageMode.InMemory:

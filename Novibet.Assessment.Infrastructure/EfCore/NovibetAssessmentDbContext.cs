@@ -8,9 +8,11 @@ public class NovibetAssessmentDbContext(DbContextOptions<NovibetAssessmentDbCont
     : DbContext(options)
 {
     public DbSet<CurrencyRate> CurrencyRates => Set<CurrencyRate>();
+    public DbSet<Wallet> Wallets => Set<Wallet>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new CurrencyRateConfiguration());
+        modelBuilder.ApplyConfiguration(new WalletConfiguration());
     }
 }
