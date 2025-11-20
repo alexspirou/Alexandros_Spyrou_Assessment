@@ -11,14 +11,19 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Configuration.AddUserSecrets<Program>();
 
-
-
 builder.Services.AddApplication();
-AddInfrastucture(builder);
+builder.Services.Configure<HangfireOptions>(
+    builder.Configuration.GetSection(HangfireOptions.OptionsPath));
+
+var backGroundWorkerSettings = builder.Configuration
+    .GetSection(BackgroundWorkerSettings.OptionsPath)
+    .Get<BackgroundWorkerSettings>()
+    ?? throw new InvalidOperationException("BackgroundWorkerSettings are missing. Add them in configuration.");
+
+AddInfrastucture(builder, backGroundWorkerSettings.Enabled);
 
 var app = builder.Build();
 
-AddBackgroundJobs(app.Services);
 
 if (app.Environment.IsDevelopment())
 {
@@ -27,7 +32,13 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseHangfireDashboard();
+
+AddBackgroundJobs(app.Services, builder.Configuration, backGroundWorkerSettings.Enabled);
+
+if (backGroundWorkerSettings.Enabled)
+{
+    app.UseHangfireDashboard();
+}
 
 app.MapGet("/ecb/test", async (ICurrencyRateUpdater updater, CancellationToken ct) =>
 {
@@ -37,19 +48,35 @@ app.MapGet("/ecb/test", async (ICurrencyRateUpdater updater, CancellationToken c
 .WithName("TestEcbRates")
 .WithOpenApi();
 
+
 app.Run();
 
-static void AddBackgroundJobs(IServiceProvider services)
+
+
+
+
+static void AddBackgroundJobs(IServiceProvider services, IConfiguration configuration, bool backgroundWorkerEnabled)
 {
-    using (var scope = services.CreateScope())
+    using var scope = services.CreateScope();
+
+
+
+    bool currencyRatesEnabled = configuration.GetValue<bool>("CurrencyRatesJob:Enabled");
+    string? cron = configuration.GetValue<string>("CurrencyRatesJob:Cron");
+
+    if (!currencyRatesEnabled || !backgroundWorkerEnabled)
     {
-        var jobRegistration = scope.ServiceProvider.GetRequiredService<IJobRegistration>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>()
+                    .CreateLogger("BackgroundJobs");
 
-        jobRegistration.RegisterCurrencyRatesJobs();
+        logger.LogInformation("CurrencyRatesJob is disabled. No recurring job will be registered.");
+        return;
     }
-}
 
-static void AddInfrastucture(WebApplicationBuilder builder)
+    var jobRegistration = scope.ServiceProvider.GetRequiredService<IJobRegistration>();
+    jobRegistration.RegisterCurrencyRatesJobs(cron ?? "* * * * * *");
+}
+static void AddInfrastucture(WebApplicationBuilder builder, bool backGroundServiceEnabled)
 {
     var sqlServerConnectionString = builder.Configuration.GetConnectionString("SqlServerConnectionString");
 
@@ -58,7 +85,7 @@ static void AddInfrastucture(WebApplicationBuilder builder)
 
     var hangfireOptions = builder.Configuration
         .GetSection(HangfireOptions.OptionsPath)
-        .Get<HangfireOptions>() ?? throw new InvalidOperationException("Hangfire options is not configured.");
+        .Get<HangfireOptions>() ?? throw new InvalidOperationException("Hangfire options are missing. Ensure HangfireOptions exists in configuration.");
 
-    builder.Services.AddInfrastructure(new InfrastructureSettings(sqlServerConnectionString, hangfireOptions));
+    builder.Services.AddInfrastructure(new InfrastructureSettings(sqlServerConnectionString, hangfireOptions, backGroundServiceEnabled));
 }

@@ -11,11 +11,11 @@ public class CurrencyRateHangfireJobs : IJobRegistration
     {
         _recurringJobManager = recurringJobManager;
     }
-    public void RegisterCurrencyRatesJobs()
+    public void RegisterCurrencyRatesJobs(string cron)
     {
         _recurringJobManager.AddOrUpdate<ICurrencyRateUpdater>(
             UpdateCurrencyRatesJob,
             updater => updater.UpdateRatesAsync(CancellationToken.None),
-            Cron.Minutely);
+           cron);
     }
 }

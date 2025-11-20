@@ -2,6 +2,6 @@
 
 public interface IJobRegistration
 {
-    void RegisterCurrencyRatesJobs();
+    void RegisterCurrencyRatesJobs(string cron);
 
 }

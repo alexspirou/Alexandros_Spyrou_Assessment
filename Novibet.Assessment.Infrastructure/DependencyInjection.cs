@@ -15,20 +15,34 @@ namespace Novibet.Assessment.Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, InfrastructureSettings settings)
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, InfrastructureSettings infraSettings)
     {
         services.AddEcbGateway();
 
-        if (string.IsNullOrWhiteSpace(settings.SqlServerConnectionString))
+        if (string.IsNullOrWhiteSpace(infraSettings.SqlServerConnectionString))
         {
             throw new InvalidOperationException("Database connection string is missing");
         }
 
         services.AddDbContext<NovibetAssessmentDbContext>(options =>
-            options.UseSqlServer(settings.SqlServerConnectionString));
+            options.UseSqlServer(infraSettings.SqlServerConnectionString));
 
-        var hangfireOptions = settings.Hangfire ?? new HangfireOptions();
+        var hangfireOptions = infraSettings.Hangfire ?? new HangfireOptions();
 
+        if (infraSettings.BackgroundServiceEnabled)
+        {
+            AddHangFire(services, infraSettings, hangfireOptions);
+            services.AddScoped<IJobRegistration, CurrencyRateHangfireJobs>();
+
+        }
+
+        services.AddScoped<ICurrencyRateRepository, CurrencyRateRepository>();
+
+        return services;
+    }
+
+    private static void AddHangFire(IServiceCollection services, InfrastructureSettings settings, HangfireOptions hangfireOptions)
+    {
         services.AddHangfire((configuration, hangfireConfig) =>
         {
 
@@ -58,10 +72,5 @@ public static class DependencyInjection
                 ? "hangfire-server"
                 : hangfireOptions.ServerName;
         });
-
-        services.AddScoped<ICurrencyRateRepository, CurrencyRateRepository>();
-        services.AddScoped<IJobRegistration, CurrencyRateHangfireJobs>();
-
-        return services;
     }
 }
