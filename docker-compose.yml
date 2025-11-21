@@ -1,9 +1,12 @@
 version: "3.9"
 
+name: novibet-wallet
+
 services:
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: novibetassessment-sqlserver
+    container_name: novibet-wallet-sqlserver
+    hostname: novibet-wallet-sqlserver
     environment:
       SA_PASSWORD: "YourStrong!Passw0rd"
       ACCEPT_EULA: "Y"

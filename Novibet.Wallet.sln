@@ -1,0 +1,66 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36301.6
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EcbGateway", "EcbGateway\EcbGateway.csproj", "{F959A18F-BE8D-4AFE-99AB-BA86B941FFAC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{5F0156CD-0768-43B4-8688-CF2AA9023059}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Novibet.Wallet.Api", "Novibet.Wallet.Api\Novibet.Wallet.Api.csproj", "{6D97AA42-8F14-99BB-2141-CD6D13F46A5F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Novibet.Wallet.Domain", "Novibet.Wallet.Domain\Novibet.Wallet.Domain.csproj", "{946ECA07-5143-4745-9418-05286A7E8347}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Novibet.Wallet.Application", "Novibet.Wallet.Application\Novibet.Wallet.Application.csproj", "{AEA8F151-A3E9-44AE-AF15-C3157BE72ADB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Novibet.Wallet.Infrastructure", "Novibet.Wallet.Infrastructure\Novibet.Wallet.Infrastructure.csproj", "{86399C60-4624-4BE6-B324-DF13B8F777B4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Packages.props = Directory.Packages.props
+		docker-compose.yml = docker-compose.yml
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F959A18F-BE8D-4AFE-99AB-BA86B941FFAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F959A18F-BE8D-4AFE-99AB-BA86B941FFAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F959A18F-BE8D-4AFE-99AB-BA86B941FFAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F959A18F-BE8D-4AFE-99AB-BA86B941FFAC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D97AA42-8F14-99BB-2141-CD6D13F46A5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D97AA42-8F14-99BB-2141-CD6D13F46A5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D97AA42-8F14-99BB-2141-CD6D13F46A5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D97AA42-8F14-99BB-2141-CD6D13F46A5F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{946ECA07-5143-4745-9418-05286A7E8347}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{946ECA07-5143-4745-9418-05286A7E8347}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{946ECA07-5143-4745-9418-05286A7E8347}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{946ECA07-5143-4745-9418-05286A7E8347}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AEA8F151-A3E9-44AE-AF15-C3157BE72ADB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AEA8F151-A3E9-44AE-AF15-C3157BE72ADB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AEA8F151-A3E9-44AE-AF15-C3157BE72ADB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AEA8F151-A3E9-44AE-AF15-C3157BE72ADB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86399C60-4624-4BE6-B324-DF13B8F777B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86399C60-4624-4BE6-B324-DF13B8F777B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86399C60-4624-4BE6-B324-DF13B8F777B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86399C60-4624-4BE6-B324-DF13B8F777B4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F959A18F-BE8D-4AFE-99AB-BA86B941FFAC} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{6D97AA42-8F14-99BB-2141-CD6D13F46A5F} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{946ECA07-5143-4745-9418-05286A7E8347} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{AEA8F151-A3E9-44AE-AF15-C3157BE72ADB} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{86399C60-4624-4BE6-B324-DF13B8F777B4} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {515974BF-4A95-4C13-9AB2-F4DC319F9DB9}
+	EndGlobalSection
+EndGlobal

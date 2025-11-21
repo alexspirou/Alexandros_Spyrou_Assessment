@@ -1,7 +1,0 @@
-﻿namespace Novibet.Assessment.Application.Features.CurrencyRates;
-
-public interface ICurrencyRateRepository
-{
-    Task<CurrencyRatesSaveResult> SaveCurrencyRatesAsync(IReadOnlyList<CurrencyRatesResponse> currencyRates, CancellationToken cancellationToken = default);
-    Task<IDictionary<string, decimal>> GetCurrencyRates(IEnumerable<string> currencyCodes, DateOnly date, CancellationToken cancellationToken = default);
-}
