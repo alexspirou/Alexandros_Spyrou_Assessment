@@ -10,7 +10,8 @@ public class WalletConfiguration : IEntityTypeConfiguration<WalletEntity>
     {
         builder.ToTable("Wallets");
 
-        builder.HasKey(wallet => wallet.Id);
+        builder.Property(w => w.Id)
+               .ValueGeneratedOnAdd();
 
         builder.Property(wallet => wallet.Balance)
             .HasPrecision(18, 2)

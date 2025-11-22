@@ -27,59 +27,38 @@ public class WalletService : IWalletService
 
 
 
-    public async Task<WalletEntity> CreateWalletAsync(string currency, decimal initialBalance = 0, CancellationToken cancellationToken = default)
+    public async Task<long> CreateWalletAsync(string currency, decimal initialBalance = 0, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(currency))
-            throw new InvalidCurrencyException(nameof(currency));
-
         var wallet = new WalletEntity
         {
             Currency = currency,
             Balance = initialBalance
         };
 
-        return await _walletRepository.AddAsync(wallet, cancellationToken);
+        wallet = await _walletRepository.AddAsync(wallet, cancellationToken);
+
+        return wallet.Id;
     }
 
-    public async Task<decimal> GetBalanceAsync(long walletId, string? currency = null, CancellationToken cancellationToken = default)
+    public async Task<decimal> GetBalanceAsync(long walletId, string? toCurrency = null, CancellationToken cancellationToken = default)
     {
         var wallet = await _walletRepository.GetByIdAsync(walletId, cancellationToken)
             ?? throw new WalletNotFoundException(walletId);
 
-        if (!string.IsNullOrWhiteSpace(currency) &&
-            !string.Equals(wallet.Currency, currency, StringComparison.OrdinalIgnoreCase))
+        if (string.IsNullOrEmpty(toCurrency) || wallet.Currency.Equals(toCurrency, StringComparison.OrdinalIgnoreCase))
         {
-            throw new CurrencyMismatchException(wallet.Currency, currency);
+            return wallet.Balance;
         }
 
-        return wallet.Balance;
+        return await ConvertAmountAsync(wallet.Balance, wallet.Currency, toCurrency, cancellationToken);
     }
 
     public async Task<WalletEntity> AdjustBalanceAsync(AdjustBalanceRequest request, CancellationToken cancellationToken = default)
     {
-        if (_strategies is null || _strategies.Count == 0)
-            throw new UnsupportedWalletStrategyException(nameof(_strategies));
-
-        if (string.IsNullOrWhiteSpace(request.Currency))
-            throw new InvalidCurrencyException(nameof(request.Currency));
-
-
         var wallet = await _walletRepository.GetByIdAsync(request.WalletId, cancellationToken)
             ?? throw new WalletNotFoundException(request.WalletId);
 
-        var dateUtc = DateOnly.FromDateTime(_timeProvider.GetUtcNow().UtcDateTime);
-
-        var currencies = new[] { request.Currency, wallet.Currency };
-        var rates = await _currencyRateRepository.GetCurrencyRates(currencies, dateUtc, cancellationToken);
-
-        if (!rates.TryGetValue(request.Currency, out var requestCurrencyRate) || requestCurrencyRate <= 0m)
-            throw new ResourceNotFoundException($"Currency rate for {request.Currency} on {dateUtc:yyyy-MM-dd}");
-
-        if (!rates.TryGetValue(wallet.Currency, out var walletCurrencyRate) || walletCurrencyRate <= 0m)
-            throw new ResourceNotFoundException($"Currency rate for {wallet.Currency} on {dateUtc:yyyy-MM-dd}");
-
-        var amountInRequestCurrency = request.Amount / requestCurrencyRate;
-        var amoutInWalletCurrency = Math.Round(amountInRequestCurrency * walletCurrencyRate, 2, MidpointRounding.ToZero);
+        var amoutInWalletCurrency = await ConvertAmountAsync(request.Amount, wallet.Currency, request.Currency, cancellationToken);
 
         if (!_strategies.TryGetValue(request.Strategy, out var walletAdjustmentAction))
             throw new UnsupportedWalletStrategyException(request.Strategy.ToString());
@@ -109,5 +88,37 @@ public class WalletService : IWalletService
         wallet.Balance -= amount;
     }
 
-}
+    private async Task<decimal> ConvertAmountAsync(
+        decimal amount,
+        string fromCurrency,
+        string toCurrency,
+        CancellationToken cancellationToken)
+    {
+        fromCurrency = fromCurrency.ToUpperInvariant();
+        toCurrency = toCurrency.ToUpperInvariant();
 
+        if (fromCurrency == toCurrency)
+            return Math.Round(amount, 2, MidpointRounding.AwayFromZero);
+
+        var date = DateOnly.FromDateTime(_timeProvider.GetUtcNow().UtcDateTime);
+
+        var currencyCodes = new[] { fromCurrency, toCurrency };
+
+        var rates = await _currencyRateRepository.GetCurrencyRates(currencyCodes, date, cancellationToken);
+
+        if (!rates.ContainsKey(CurrencyCodes.Eur))
+            rates[CurrencyCodes.Eur] = 1m;
+
+        if (!rates.TryGetValue(fromCurrency, out var fromRate))
+            throw new CurrencyRateNotFoundException(fromCurrency, date);
+
+        if (!rates.TryGetValue(toCurrency, out var toRate))
+            throw new CurrencyRateNotFoundException(toCurrency, date);
+
+        var amountInEur = amount / fromRate;
+        var convertedAmount = amountInEur * toRate;
+
+        return convertedAmount;
+    }
+
+}

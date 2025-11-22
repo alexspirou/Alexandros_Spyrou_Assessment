@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Novibet.Wallet.Application.Features.Wallets;
-using Novibet.Wallet.Infrastructure.Persistence;
 using Novibet.Wallet.Domain.Entities;
+using Novibet.Wallet.Infrastructure.Persistence;
 
 namespace Novibet.Wallet.Infrastructure.EfCore.Repositories;
 

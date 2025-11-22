@@ -7,11 +7,16 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="FluentValidation" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Novibet.Wallet.Domain\Novibet.Wallet.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Features\Wallets\Responses\" />
     </ItemGroup>
 
 </Project>

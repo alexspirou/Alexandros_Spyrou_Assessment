@@ -1,21 +1,42 @@
+using FluentValidation;
 using Hangfire;
-using Novibet.Wallet.Api;
+using Microsoft.AspNetCore.Http.Json;
+using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Models;
 using Novibet.Wallet.Api.Middleware;
 using Novibet.Wallet.Application;
 using Novibet.Wallet.Application.Features.CurrencyRates;
+using Novibet.Wallet.Application.Features.Wallets;
+using Novibet.Wallet.Application.Features.Wallets.Requests;
 using Novibet.Wallet.Infrastructure;
 using Novibet.Wallet.Infrastructure.BackgroundServices;
 using Novibet.Wallet.Infrastructure.Options;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.MapType<WalletAdjustmentStrategy>(() => new OpenApiSchema
+    {
+        Type = "string",
+        Enum = Enum.GetNames<WalletAdjustmentStrategy>()
+            .Select(name => (IOpenApiAny)new OpenApiString(name))
+            .ToList()
+    });
+});
+builder.Services.Configure<JsonOptions>(options =>
+{
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
+builder.Services.AddControllers();
 builder.Configuration.AddUserSecrets<Program>();
 
 builder.Services.AddApplication();
 builder.Services.Configure<HangfireOptions>(
     builder.Configuration.GetSection(HangfireOptions.OptionsPath));
+builder.Services.AddValidatorsFromAssemblyContaining<CreateWalletRequest>();
 
 var backGroundWorkerSettings = builder.Configuration
     .GetSection(BackgroundWorkerSettings.OptionsPath)
@@ -51,7 +72,7 @@ app.MapGet("/ecb/test", async (ICurrencyRateUpdater updater, CancellationToken c
 .WithName("TestEcbRates")
 .WithOpenApi();
 
-app.MapWalletEndpoints();
+app.MapControllers();
 
 
 app.Run();

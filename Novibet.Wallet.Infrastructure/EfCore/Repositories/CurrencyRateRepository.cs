@@ -17,15 +17,33 @@ public class CurrencyRateRepository : ICurrencyRateRepository
         _timeProvider = timeProvider;
     }
 
-    public async Task<IDictionary<string, decimal>> GetCurrencyRates(IEnumerable<string> currencyCodes,
-        DateOnly date,
-        CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<string>> GetAvailableCurrenciesAsync(CancellationToken cancellationToken = default)
     {
         return await _dbContext.CurrencyRates
-            .Where(x => currencyCodes.Contains(x.CurrencyCode) && x.Date == date)
-            .ToDictionaryAsync(x => x.CurrencyCode, x => x.Rate, cancellationToken);
+            .AsNoTracking()
+            .Select(x => x.CurrencyCode)
+            .Distinct()
+            .ToListAsync(cancellationToken);
     }
 
+    public async Task<IDictionary<string, decimal>> GetCurrencyRates(
+        IEnumerable<string> currencyCodes,
+        DateOnly date,
+        CancellationToken ct = default)
+    {
+        var codes = currencyCodes
+            .Where(c => !string.IsNullOrWhiteSpace(c))
+            .Select(c => c.ToUpperInvariant())
+            .Distinct()
+            .ToArray();
+
+        return await _dbContext.CurrencyRates
+            .AsNoTracking()
+            .Where(x => codes.Contains(x.CurrencyCode))
+            .GroupBy(x => x.CurrencyCode)
+            .Select(g => g.OrderByDescending(x => x.Date).First())
+            .ToDictionaryAsync(x => x.CurrencyCode.ToUpperInvariant(), x => x.Rate, ct);
+    }
     public async Task<CurrencyRatesSaveResult> SaveCurrencyRatesAsync(
         IReadOnlyList<CurrencyRatesResponse> currencyRates,
         CancellationToken cancellationToken = default)
