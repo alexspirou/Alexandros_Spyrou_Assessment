@@ -20,5 +20,11 @@ services:
     volumes:
       - sql_data:/var/opt/mssql
 
+  redis:
+    image: redis:7
+    container_name: novibet-wallet-redis
+    ports:
+      - "6379:6379"
+
 volumes:
   sql_data:

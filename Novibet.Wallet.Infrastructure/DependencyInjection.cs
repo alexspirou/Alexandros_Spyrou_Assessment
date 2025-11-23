@@ -1,14 +1,16 @@
+using EcbGateway;
 using Hangfire;
 using Hangfire.MemoryStorage;
 using Hangfire.SqlServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Novibet.Wallet.Application.Cache;
 using Novibet.Wallet.Application.Features.CurrencyRates;
 using Novibet.Wallet.Application.Features.Wallets;
-using EcbGateway;
 using Novibet.Wallet.Infrastructure.BackgroundServices;
 using Novibet.Wallet.Infrastructure.BackgroundServices.Hangfire;
 using Novibet.Wallet.Infrastructure.EfCore.Repositories;
+using Novibet.Wallet.Infrastructure.FusionCache;
 using Novibet.Wallet.Infrastructure.Options;
 using Novibet.Wallet.Infrastructure.Persistence;
 
@@ -33,12 +35,17 @@ public static class DependencyInjection
         if (hangfireOptions is not null && infraSettings.BackgroundServiceEnabled)
         {
             AddHangFire(services, infraSettings, hangfireOptions);
-            services.AddScoped<IJobRegistration, CurrencyRateHangfireJobs>();
+            services.AddScoped<IBackgroundJobConfigurator, HangfireJobs>();
 
         }
 
         services.AddScoped<ICurrencyRateRepository, CurrencyRateRepository>();
+
+        services.AddScoped<ICurrencyRateRepository, CurrencyRateRepository>()
+                .Decorate<ICurrencyRateRepository, CurrencyRateRepositoryWithCache>();
+
         services.AddScoped<IWalletRepository, EfWalletRepository>();
+        services.AddScoped<IAppCache, FusionCacheService>();
 
         return services;
     }

@@ -8,4 +8,3 @@ public interface IWalletRepository
     Task<WalletEntity> AddAsync(WalletEntity wallet, CancellationToken cancellationToken = default);
     Task UpdateAsync(WalletEntity wallet, CancellationToken cancellationToken = default);
 }
-

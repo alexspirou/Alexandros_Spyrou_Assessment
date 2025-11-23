@@ -12,6 +12,8 @@ using Novibet.Wallet.Infrastructure;
 using Novibet.Wallet.Infrastructure.BackgroundServices;
 using Novibet.Wallet.Infrastructure.Options;
 using System.Text.Json.Serialization;
+using ZiggyCreatures.Caching.Fusion;
+using ZiggyCreatures.Caching.Fusion.Serialization.SystemTextJson;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +39,8 @@ builder.Services.AddApplication();
 builder.Services.Configure<HangfireOptions>(
     builder.Configuration.GetSection(HangfireOptions.OptionsPath));
 builder.Services.AddValidatorsFromAssemblyContaining<CreateWalletRequest>();
+
+ConfigureCache(builder);
 
 var backGroundWorkerSettings = builder.Configuration
     .GetSection(BackgroundWorkerSettings.OptionsPath)
@@ -85,23 +89,34 @@ static void AddBackgroundJobs(IServiceProvider services, IConfiguration configur
 {
     using var scope = services.CreateScope();
 
-
-
-    bool currencyRatesEnabled = configuration.GetValue<bool>("CurrencyRatesJob:Enabled");
     string? cron = configuration.GetValue<string>("CurrencyRatesJob:Cron");
+    var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>()
+        .CreateLogger("BackgroundJobs");
 
-    if (!currencyRatesEnabled || !backgroundWorkerEnabled)
+    if (!backgroundWorkerEnabled)
     {
-        var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>()
-                    .CreateLogger("BackgroundJobs");
-
-        logger.LogInformation("CurrencyRatesJob is disabled. No recurring job will be registered.");
+        logger.LogInformation("Background worker is disabled. No jobs will be registered.");
         return;
     }
 
-    var jobRegistration = scope.ServiceProvider.GetRequiredService<IJobRegistration>();
-    jobRegistration.RegisterCurrencyRatesJobs(cron ?? "* * * * * *");
+    var jobRegistration = scope.ServiceProvider.GetRequiredService<IBackgroundJobConfigurator>();
+
+    bool currencyRatesEnabled = configuration.GetValue<bool>("CurrencyRatesJob:Enabled");
+
+    if (currencyRatesEnabled)
+    {
+        jobRegistration.RegisterCurrencyRatesJobs(cron ?? "* * * * * *");
+        logger.LogInformation("Recurring CurrencyRatesJob registered.");
+    }
+    bool scheduleAvailableCurrenciesForCacheEnabled = configuration.GetValue<bool>("AvailableCurrenciesForCacheJob:Enabled");
+
+    if (scheduleAvailableCurrenciesForCacheEnabled)
+    {
+        jobRegistration.ScheduleAvailableCurrenciesForCache();
+        logger.LogInformation("ScheduleAvailableCurrenciesForCacheJob has started.");
+    }
 }
+
 static void AddInfrastucture(WebApplicationBuilder builder, bool backGroundServiceEnabled)
 {
     var sqlServerConnectionString = builder.Configuration.GetConnectionString("SqlServerConnectionString");
@@ -114,5 +129,23 @@ static void AddInfrastucture(WebApplicationBuilder builder, bool backGroundServi
         .Get<HangfireOptions>() ?? throw new InvalidOperationException("Hangfire options are missing. Ensure HangfireOptions exists in configuration.");
 
     builder.Services.AddInfrastructure(new InfrastructureSettings(sqlServerConnectionString, backGroundServiceEnabled, hangfireOptions));
+}
+
+static void ConfigureCache(WebApplicationBuilder builder)
+{
+    var redisConnection = builder.Configuration.GetConnectionString("Redis");
+
+    var fusionBuilder = builder.Services
+        .AddFusionCache()
+        .TryWithAutoSetup()
+        .WithSerializer(new FusionCacheSystemTextJsonSerializer());
+
+    if (!string.IsNullOrWhiteSpace(redisConnection))
+    {
+        builder.Services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = redisConnection;
+        });
+    }
 }
 

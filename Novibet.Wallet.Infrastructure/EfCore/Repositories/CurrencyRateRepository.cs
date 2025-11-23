@@ -26,10 +26,7 @@ public class CurrencyRateRepository : ICurrencyRateRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IDictionary<string, decimal>> GetCurrencyRates(
-        IEnumerable<string> currencyCodes,
-        DateOnly date,
-        CancellationToken ct = default)
+    public async Task<IDictionary<string, decimal>> GetCurrencyRates(IEnumerable<string> currencyCodes, DateOnly date, CancellationToken ct = default)
     {
         var codes = currencyCodes
             .Where(c => !string.IsNullOrWhiteSpace(c))

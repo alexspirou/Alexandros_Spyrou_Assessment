@@ -18,7 +18,9 @@
         <PackageReference Include="Hangfire.AspNetCore" />
         <PackageReference Include="Hangfire.SqlServer" />
         <PackageReference Include="Hangfire.MemoryStorage" />
+        <PackageReference Include="ZiggyCreatures.FusionCache" />
+        <PackageReference Include="ZiggyCreatures.FusionCache.Serialization.SystemTextJson" />
+        <PackageReference Include="Scrutor" />
     </ItemGroup>
 
 </Project>
-

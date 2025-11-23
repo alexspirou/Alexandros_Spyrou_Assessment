@@ -1,0 +1,1 @@
+namespace Novibet.Wallet.Application.Cache;public readonly record struct CacheOptions(TimeSpan? Duration = null, CacheProfile Profile = CacheProfile.DistributedOnly);

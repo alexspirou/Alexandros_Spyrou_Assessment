@@ -3,11 +3,11 @@ using Novibet.Wallet.Application.Features.CurrencyRates;
 
 namespace Novibet.Wallet.Infrastructure.BackgroundServices.Hangfire;
 
-public class CurrencyRateHangfireJobs : IJobRegistration
+public class HangfireJobs : IBackgroundJobConfigurator
 {
     private readonly IRecurringJobManager _recurringJobManager;
     private const string UpdateCurrencyRatesJob = nameof(UpdateCurrencyRatesJob);
-    public CurrencyRateHangfireJobs(IRecurringJobManager recurringJobManager)
+    public HangfireJobs(IRecurringJobManager recurringJobManager)
     {
         _recurringJobManager = recurringJobManager;
     }
@@ -18,5 +18,14 @@ public class CurrencyRateHangfireJobs : IJobRegistration
             updater => updater.UpdateRatesAsync(CancellationToken.None),
            cron);
     }
+
+    public void ScheduleAvailableCurrenciesForCache()
+    {
+        BackgroundJob.Schedule<ICurrencyRateRepository>(
+            repo => repo.GetAvailableCurrenciesAsync(CancellationToken.None),
+            TimeSpan.FromSeconds(1)
+        );
+    }
+
 }
 

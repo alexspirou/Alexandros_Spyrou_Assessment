@@ -12,6 +12,9 @@
         <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
         <PackageReference Include="Swashbuckle.AspNetCore" />
+        <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
+        <PackageReference Include="ZiggyCreatures.FusionCache" />
+        <PackageReference Include="ZiggyCreatures.FusionCache.Serialization.SystemTextJson" />
     </ItemGroup>
 
     <ItemGroup>
