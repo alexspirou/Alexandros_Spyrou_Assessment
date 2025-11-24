@@ -9,11 +9,3 @@ public class HangfireOptions
     public JobStorageMode JobStorageMode { get; set; } = JobStorageMode.InMemory;
     public string ServerName { get; set; } = "hangfire-server";
 }
-
-public enum JobStorageMode
-{
-    InMemory,
-    Sql,
-    Disabled,
-}
-

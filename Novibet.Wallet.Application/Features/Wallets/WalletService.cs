@@ -88,17 +88,13 @@ public class WalletService : IWalletService
         wallet.Balance -= amount;
     }
 
-    private async Task<decimal> ConvertAmountAsync(
-        decimal amount,
-        string fromCurrency,
-        string toCurrency,
-        CancellationToken cancellationToken)
+    private async Task<decimal> ConvertAmountAsync(decimal amount, string fromCurrency, string toCurrency, CancellationToken cancellationToken)
     {
         fromCurrency = fromCurrency.ToUpperInvariant();
         toCurrency = toCurrency.ToUpperInvariant();
 
         if (fromCurrency == toCurrency)
-            return Math.Round(amount, 2, MidpointRounding.AwayFromZero);
+            return amount;
 
         var date = DateOnly.FromDateTime(_timeProvider.GetUtcNow().UtcDateTime);
 
