@@ -1,6 +1,7 @@
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Novibet.Wallet.Application.Features.Wallets;
 using Novibet.Wallet.Application.Features.Wallets.Requests;
 using Novibet.Wallet.Application.Features.Wallets.Responses;
@@ -9,6 +10,7 @@ namespace Novibet.Wallet.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[EnableRateLimiting("fixed")]
 public class WalletController : ControllerBase
 {
     private readonly IWalletService _walletService;
@@ -33,7 +35,7 @@ public class WalletController : ControllerBase
         var validation = await _createValidator.ValidateAsync(request, ct);
         if (!validation.IsValid)
         {
-            return ValidationProblem(new ValidationProblemDetails(ToFlatProblem(validation)));
+            return ValidationProblem(new ValidationProblemDetails(ToDictionary(validation)));
         }
 
         var walletId = await _walletService.CreateWalletAsync(request.Currency, request.InitialBalance, ct);
@@ -54,17 +56,17 @@ public class WalletController : ControllerBase
     [ProducesResponseType(typeof(WalletResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> AdjustBalance(long walletId, [FromQuery] AdjustBalanceQuery query, CancellationToken ct)
+    public async Task<IActionResult> AdjustBalance(long walletId, [FromQuery] AdjustBalanceQuery query, CancellationToken cancellationToken)
     {
-        var validation = await _adjustValidator.ValidateAsync(query, ct);
+        var validation = await _adjustValidator.ValidateAsync(query, cancellationToken);
         if (!validation.IsValid)
         {
-            return ValidationProblem(new ValidationProblemDetails(ToFlatProblem(validation)));
+            return ValidationProblem(new ValidationProblemDetails(ToDictionary(validation)));
         }
 
         var wallet = await _walletService.AdjustBalanceAsync(
             new AdjustBalanceRequest(walletId, query.Amount, query.Currency, query.Strategy),
-            ct);
+            cancellationToken);
 
         return Ok(new WalletResponse(
             Id: wallet.Id,
@@ -72,7 +74,7 @@ public class WalletController : ControllerBase
             Currency: wallet.Currency));
     }
 
-    private static Dictionary<string, string[]> ToFlatProblem(ValidationResult validationResult) =>
+    private static Dictionary<string, string[]> ToDictionary(ValidationResult validationResult) =>
         new()
         {
             ["Errors"] = validationResult.Errors.Select(e => e.ErrorMessage).ToArray()

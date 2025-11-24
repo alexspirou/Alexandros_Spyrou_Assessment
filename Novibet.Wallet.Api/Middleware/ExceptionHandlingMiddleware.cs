@@ -1,6 +1,7 @@
+using Novibet.Wallet.Api.Exceptions;
+using Novibet.Wallet.Application.Features.Wallets.Exceptions;
 using System.Net;
 using System.Text.Json;
-using Novibet.Wallet.Application.Features.Wallets.Exceptions;
 
 namespace Novibet.Wallet.Api.Middleware;
 
@@ -20,6 +21,11 @@ public class ExceptionHandlingMiddleware
         try
         {
             await _next(context);
+        }
+        catch (RateLimitException ex)
+        {
+            await WriteErrorAsync(context, ex.StatusCode, $"{ex.Message} Retry after: {ex.RetryAfter.TotalSeconds} seconds");
+
         }
         catch (BaseWalletException ex)
         {
@@ -44,14 +50,6 @@ public class ExceptionHandlingMiddleware
         });
 
         await context.Response.WriteAsync(payload);
-    }
-}
-
-public static class ExceptionHandlingMiddlewareExtensions
-{
-    public static IApplicationBuilder UseExceptionHandling(this IApplicationBuilder app)
-    {
-        return app.UseMiddleware<ExceptionHandlingMiddleware>();
     }
 }
 

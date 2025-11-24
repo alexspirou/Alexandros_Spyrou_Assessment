@@ -1,17 +1,18 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Hangfire;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
+using Novibet.Wallet.Api.Exceptions;
 using Novibet.Wallet.Api.Middleware;
 using Novibet.Wallet.Application;
-using Novibet.Wallet.Application.Features.CurrencyRates;
 using Novibet.Wallet.Application.Features.Wallets;
 using Novibet.Wallet.Application.Features.Wallets.Requests;
 using Novibet.Wallet.Infrastructure;
 using Novibet.Wallet.Infrastructure.BackgroundServices;
 using Novibet.Wallet.Infrastructure.Options;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using ZiggyCreatures.Caching.Fusion;
 using ZiggyCreatures.Caching.Fusion.Serialization.SystemTextJson;
 
@@ -32,6 +33,27 @@ builder.Services.Configure<JsonOptions>(options =>
 {
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy("fixed", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString(),
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromSeconds(10)
+            }));
+
+    options.OnRejected = (context, token) =>
+    {
+        context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retry);
+        throw new RateLimitException("Too many requests.", retry);
+    };
+});
+
+
+
 builder.Services.AddControllers();
 builder.Configuration.AddUserSecrets<Program>();
 
@@ -68,13 +90,7 @@ if (backGroundWorkerSettings.Enabled)
     app.UseHangfireDashboard();
 }
 
-app.MapGet("/ecb/test", async (ICurrencyRateUpdater updater, CancellationToken ct) =>
-{
-    var result = await updater.UpdateRatesAsync(ct);
-    return Results.Ok($"Rows affected {result.AffectedRows}");
-})
-.WithName("TestEcbRates")
-.WithOpenApi();
+app.UseRateLimiter();
 
 app.MapControllers();
 
