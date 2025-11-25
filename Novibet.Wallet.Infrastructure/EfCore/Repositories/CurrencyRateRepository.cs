@@ -94,14 +94,23 @@ public class CurrencyRateRepository : ICurrencyRateRepository
                 INSERT (CurrencyCode, Rate, Date, LastUpdatedUtc)
                 VALUES (Source.CurrencyCode, Source.Rate, Source.Date, Source.LastUpdatedUtc);
         ";
+        try
+        {
 
-        var affectedRows = await _dbContext.Database.ExecuteSqlRawAsync(
-            sql,
-            parameters.ToArray(),
-            cancellationToken
-        );
 
-        return new CurrencyRatesSaveResult(affectedRows);
+            var affectedRows = await _dbContext.Database.ExecuteSqlRawAsync(
+                sql,
+                parameters.ToArray(),
+                cancellationToken
+            );
+
+            return new CurrencyRatesSaveResult(affectedRows);
+        }
+        catch (Exception ex)
+        {
+            throw;
+        }
+
     }
 }
 

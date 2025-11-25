@@ -3,6 +3,7 @@ using Hangfire;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
+using Novibet.Wallet.Api;
 using Novibet.Wallet.Api.Exceptions;
 using Novibet.Wallet.Api.Middleware;
 using Novibet.Wallet.Application;
@@ -17,6 +18,7 @@ using ZiggyCreatures.Caching.Fusion;
 using ZiggyCreatures.Caching.Fusion.Serialization.SystemTextJson;
 
 var builder = WebApplication.CreateBuilder(args);
+DotNetEnv.Env.Load();  // <- load .env
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -60,6 +62,7 @@ builder.Services.AddApplication();
 builder.Services.Configure<HangfireOptions>(
     builder.Configuration.GetSection(HangfireOptions.OptionsPath));
 builder.Services.AddValidatorsFromAssemblyContaining<CreateWalletRequest>();
+builder.Services.AddValidatorsFromAssemblyContaining<IApiMarker>();
 
 ConfigureCache(builder);
 
@@ -94,7 +97,6 @@ app.UseRateLimiter();
 app.MapControllers();
 
 app.Run();
-
 
 
 
@@ -164,3 +166,4 @@ static void ConfigureCache(WebApplicationBuilder builder)
 }
 
 
+public partial class Program { }
