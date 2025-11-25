@@ -1,5 +1,6 @@
 using Hangfire;
-using Novibet.Wallet.Application.Features.CurrencyRates;
+using Novibet.Wallet.Application.Features.CurrencyRates.Repositories;
+using Novibet.Wallet.Application.Features.CurrencyRates.Services;
 
 namespace Novibet.Wallet.Infrastructure.BackgroundServices.Hangfire;
 
@@ -22,7 +23,7 @@ public class HangfireJobs : IBackgroundJobConfigurator
 
     }
 
-    public void ScheduleAvailableCurrenciesForCache()
+    public void RegisterAvailableCurrenciesForCache()
     {
         BackgroundJob.Schedule<ICurrencyRateRepository>(
             repo => repo.GetAvailableCurrenciesAsync(CancellationToken.None),

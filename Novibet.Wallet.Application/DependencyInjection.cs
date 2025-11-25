@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
-using Novibet.Wallet.Application.Features.CurrencyRates;
-using Novibet.Wallet.Application.Features.Wallets;
+using Novibet.Wallet.Application.Features.CurrencyRates.Services;
+using Novibet.Wallet.Application.Features.Wallets.Services;
 
 namespace Novibet.Wallet.Application;
 

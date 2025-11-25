@@ -1,8 +1,11 @@
-using Novibet.Wallet.Application.Features.CurrencyRates;
-using Novibet.Wallet.Application.Features.Wallets.Exceptions;
+using Novibet.Wallet.Application.Exceptions;
+using Novibet.Wallet.Application.Features.CurrencyRates.Repositories;
+using Novibet.Wallet.Application.Features.Wallets.Repositories;
+using Novibet.Wallet.Application.Features.Wallets.Requests;
+using Novibet.Wallet.Application.Features.Wallets.Responses;
 using Novibet.Wallet.Domain.Entities;
 
-namespace Novibet.Wallet.Application.Features.Wallets;
+namespace Novibet.Wallet.Application.Features.Wallets.Services;
 
 public class WalletService : IWalletService
 {
@@ -40,20 +43,26 @@ public class WalletService : IWalletService
         return wallet.Id;
     }
 
-    public async Task<decimal> GetBalanceAsync(long walletId, string? toCurrency = null, CancellationToken cancellationToken = default)
+    public async Task<WalletBalanceResponse> GetBalanceAsync(long walletId, string? toCurrency = null, CancellationToken cancellationToken = default)
     {
         var wallet = await _walletRepository.GetByIdAsync(walletId, cancellationToken)
             ?? throw new WalletNotFoundException(walletId);
 
+        decimal balance;
         if (string.IsNullOrEmpty(toCurrency) || wallet.Currency.Equals(toCurrency, StringComparison.OrdinalIgnoreCase))
         {
-            return wallet.Balance;
+            balance = wallet.Balance;
+        }
+        else
+        {
+            balance = await ConvertAmountAsync(wallet.Balance, wallet.Currency, toCurrency, cancellationToken);
         }
 
-        return await ConvertAmountAsync(wallet.Balance, wallet.Currency, toCurrency, cancellationToken);
+        return new WalletBalanceResponse(wallet.Id, balance, wallet.Currency);
+
     }
 
-    public async Task<WalletEntity> AdjustBalanceAsync(AdjustBalanceRequest request, CancellationToken cancellationToken = default)
+    public async Task<WalletBalanceResponse> AdjustBalanceAsync(AdjustBalanceRequest request, CancellationToken cancellationToken = default)
     {
         var wallet = await _walletRepository.GetByIdAsync(request.WalletId, cancellationToken)
             ?? throw new WalletNotFoundException(request.WalletId);
@@ -66,7 +75,7 @@ public class WalletService : IWalletService
         walletAdjustmentAction(wallet, amoutInWalletCurrency);
 
         await _walletRepository.UpdateAsync(wallet, cancellationToken);
-        return wallet;
+        return new WalletBalanceResponse(wallet.Id, wallet.Balance, wallet.Currency);
     }
 
 
@@ -90,17 +99,15 @@ public class WalletService : IWalletService
 
     private async Task<decimal> ConvertAmountAsync(decimal amount, string fromCurrency, string toCurrency, CancellationToken cancellationToken)
     {
-        fromCurrency = fromCurrency.ToUpperInvariant();
-        toCurrency = toCurrency.ToUpperInvariant();
-
-        if (fromCurrency == toCurrency)
+        if (string.Equals(fromCurrency, toCurrency, StringComparison.OrdinalIgnoreCase))
             return amount;
 
         var date = DateOnly.FromDateTime(_timeProvider.GetUtcNow().UtcDateTime);
 
         var currencyCodes = new[] { fromCurrency, toCurrency };
 
-        var rates = await _currencyRateRepository.GetCurrencyRates(currencyCodes, date, cancellationToken);
+        var rates = await _currencyRateRepository
+            .GetCurrencyRates(currencyCodes, date, cancellationToken);
 
         if (!rates.ContainsKey(CurrencyCodes.Eur))
             rates[CurrencyCodes.Eur] = 1m;

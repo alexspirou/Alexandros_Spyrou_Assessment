@@ -1,4 +1,4 @@
-namespace Novibet.Wallet.Application.Features.CurrencyRates;
+namespace Novibet.Wallet.Application.Features.CurrencyRates.Services;
 
 public interface ICurrencyRateUpdater
 {

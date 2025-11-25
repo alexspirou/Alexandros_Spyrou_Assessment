@@ -1,29 +1,30 @@
 using FluentValidation;
-using Novibet.Wallet.Application.Features.CurrencyRates;
+using Novibet.Wallet.Application.Features.CurrencyRates.Repositories;
 using Novibet.Wallet.Application.Features.Wallets;
 
-namespace Novibet.Wallet.Application.Features.Wallets.Requests;
+namespace Novibet.Wallet.Application.Features.CurrencyRates;
 
-public class CreateWalletRequestValidator : AbstractValidator<CreateWalletRequest>
+public static class CurrencyRuleBuilderExtensions
 {
-    public CreateWalletRequestValidator(ICurrencyRateRepository currencyRateRepository)
+    public static IRuleBuilderOptions<T, string?> MustBeSupportedCurrency<T>(
+        this IRuleBuilder<T, string?> ruleBuilder,
+        ICurrencyRateRepository currencyRateRepository,
+        bool allowNullOrEmpty = false)
     {
-        RuleFor(x => x.Currency)
-            .NotEmpty()
-            .Length(3)
+        return ruleBuilder
+            .MaximumLength(3)
             .WithMessage("Currency must be a 3-letter code.")
             .MustAsync(async (currency, ct) =>
             {
+                if (string.IsNullOrWhiteSpace(currency))
+                    return allowNullOrEmpty;
+
                 if (string.Equals(currency, CurrencyCodes.Eur, StringComparison.OrdinalIgnoreCase))
                     return true;
-                // TODO: Make it fixed or add cache here
+
                 var availableCurrencies = await currencyRateRepository.GetAvailableCurrenciesAsync(ct);
                 return availableCurrencies.Any(code => string.Equals(code, currency, StringComparison.OrdinalIgnoreCase));
             })
             .WithMessage("Currency is not supported.");
-
-        RuleFor(x => x.InitialBalance)
-            .GreaterThanOrEqualTo(0m)
-            .WithMessage("Initial balance cannot be negative.");
     }
 }

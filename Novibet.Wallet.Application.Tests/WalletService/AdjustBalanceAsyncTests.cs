@@ -1,7 +1,8 @@
 using FluentAssertions;
 using Moq;
+using Novibet.Wallet.Application.Exceptions;
 using Novibet.Wallet.Application.Features.Wallets;
-using Novibet.Wallet.Application.Features.Wallets.Exceptions;
+using Novibet.Wallet.Application.Features.Wallets.Requests;
 using Novibet.Wallet.Domain.Entities;
 using System;
 using System.Collections.Generic;

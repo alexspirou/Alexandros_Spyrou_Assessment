@@ -1,12 +1,12 @@
 using EcbGateway;
 using Hangfire;
 using Hangfire.MemoryStorage;
-using Hangfire.SqlServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Novibet.Wallet.Application.Cache;
 using Novibet.Wallet.Application.Features.CurrencyRates;
-using Novibet.Wallet.Application.Features.Wallets;
+using Novibet.Wallet.Application.Features.CurrencyRates.Repositories;
+using Novibet.Wallet.Application.Features.Wallets.Repositories;
 using Novibet.Wallet.Infrastructure.BackgroundServices;
 using Novibet.Wallet.Infrastructure.BackgroundServices.Hangfire;
 using Novibet.Wallet.Infrastructure.EfCore.Repositories;
@@ -60,14 +60,7 @@ public static class DependencyInjection
                     hangfireConfig.UseMemoryStorage();
                     break;
                 case JobStorageMode.Sql:
-                    hangfireConfig.UseSqlServerStorage(settings.SqlServerConnectionString, new SqlServerStorageOptions
-                    {
-                        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-                        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-                        QueuePollInterval = TimeSpan.Zero,
-                        UseRecommendedIsolationLevel = true,
-                        DisableGlobalLocks = true,
-                    });
+                    hangfireConfig.UseSqlServerStorage(settings.SqlServerConnectionString);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(hangfireOptions.JobStorageMode), hangfireOptions.JobStorageMode, "Unsupported Hangfire storage mode.");

@@ -1,5 +1,6 @@
+using Novibet.Wallet.Application.Features.CurrencyRates.Repositories;
 
-namespace Novibet.Wallet.Application.Features.CurrencyRates;
+namespace Novibet.Wallet.Application.Features.CurrencyRates.Services;
 
 internal class CurrencyRateUpdater : ICurrencyRateUpdater
 {

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
-using Novibet.Wallet.Application.Features.CurrencyRates;
+using Novibet.Wallet.Application.Features.CurrencyRates.Responses;
+using Novibet.Wallet.Application.Features.CurrencyRates.Services;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Xml.Linq;
@@ -9,7 +10,6 @@ namespace EcbGateway;
 public class EcbCurrencyRatesService : ICurrencyRatesService
 {
     private const string RatesEndpoint = "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml";
-    //private const string RatesEndpoint = "https://localhost:12345";
     private readonly HttpClient _httpClient;
     private readonly ILogger<EcbCurrencyRatesService> _logger;
 

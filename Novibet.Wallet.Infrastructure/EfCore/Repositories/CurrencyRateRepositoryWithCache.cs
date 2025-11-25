@@ -1,4 +1,6 @@
 ﻿using Novibet.Wallet.Application.Cache;
+using Novibet.Wallet.Application.Features.CurrencyRates.Repositories;
+using Novibet.Wallet.Application.Features.CurrencyRates.Responses;
 
 namespace Novibet.Wallet.Application.Features.CurrencyRates;
 

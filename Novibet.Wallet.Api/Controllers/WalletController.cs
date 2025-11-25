@@ -2,9 +2,9 @@ using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Novibet.Wallet.Application.Features.Wallets;
 using Novibet.Wallet.Application.Features.Wallets.Requests;
 using Novibet.Wallet.Application.Features.Wallets.Responses;
+using Novibet.Wallet.Application.Features.Wallets.Services;
 
 namespace Novibet.Wallet.Api.Controllers;
 
@@ -14,64 +14,68 @@ namespace Novibet.Wallet.Api.Controllers;
 public class WalletController : ControllerBase
 {
     private readonly IWalletService _walletService;
-    private readonly IValidator<CreateWalletRequest> _createValidator;
-    private readonly IValidator<AdjustBalanceQuery> _adjustValidator;
 
     public WalletController(
-        IWalletService walletService,
-        IValidator<CreateWalletRequest> createValidator,
-        IValidator<AdjustBalanceQuery> adjustValidator)
+        IWalletService walletService)
     {
         _walletService = walletService;
-        _createValidator = createValidator;
-        _adjustValidator = adjustValidator;
     }
 
     [HttpPost]
     [ProducesResponseType(typeof(object), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Create([FromBody] CreateWalletRequest request, CancellationToken ct)
+    public async Task<IActionResult> Create([FromBody] CreateWalletRequest request,
+        [FromServices] IValidator<CreateWalletRequest> createValidator, CancellationToken cancellationToken)
     {
-        var validation = await _createValidator.ValidateAsync(request, ct);
+        var validation = await createValidator.ValidateAsync(request, cancellationToken);
         if (!validation.IsValid)
         {
             return ValidationProblem(new ValidationProblemDetails(ToDictionary(validation)));
         }
 
-        var walletId = await _walletService.CreateWalletAsync(request.Currency, request.InitialBalance, ct);
-        return CreatedAtAction(nameof(Get), new { walletId }, new { walletId });
+        var walletId = await _walletService.CreateWalletAsync(request.Currency, request.InitialBalance, cancellationToken);
+        return CreatedAtAction(nameof(Create), new { walletId }, new { walletId });
     }
 
 
     [HttpGet("{walletId:long}")]
     [ProducesResponseType(typeof(WalletBalanceResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Get(long walletId, [FromQuery] string? currency, CancellationToken ct)
+    public async Task<IActionResult> Get(long walletId,
+        [FromQuery] GetBalanceQuery query,
+        [FromServices] IValidator<GetBalanceQuery> getBalanceValidator,
+        CancellationToken cancellationToken)
     {
-        var balance = await _walletService.GetBalanceAsync(walletId, currency, ct);
-        return Ok(new WalletBalanceResponse(walletId, balance, currency ?? "EUR"));
+        var validation = await getBalanceValidator.ValidateAsync(query, cancellationToken);
+        if (!validation.IsValid)
+        {
+            return ValidationProblem(new ValidationProblemDetails(ToDictionary(validation)));
+        }
+
+        var walletResponse = await _walletService.GetBalanceAsync(walletId, query.Currency, cancellationToken);
+        return Ok(walletResponse);
     }
 
     [HttpPost("{walletId:long}/adjustbalance")]
     [ProducesResponseType(typeof(WalletResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> AdjustBalance(long walletId, [FromQuery] AdjustBalanceQuery query, CancellationToken cancellationToken)
+    public async Task<IActionResult> AdjustBalance(long walletId, [FromQuery] AdjustBalanceQuery query,
+        [FromServices] IValidator<AdjustBalanceQuery> adjustValidator,
+        CancellationToken cancellationToken)
     {
-        var validation = await _adjustValidator.ValidateAsync(query, cancellationToken);
+        var validation = await adjustValidator.ValidateAsync(query, cancellationToken);
         if (!validation.IsValid)
         {
             return ValidationProblem(new ValidationProblemDetails(ToDictionary(validation)));
         }
 
-        var wallet = await _walletService.AdjustBalanceAsync(
+        var walletResponse = await _walletService.AdjustBalanceAsync(
             new AdjustBalanceRequest(walletId, query.Amount, query.Currency, query.Strategy),
             cancellationToken);
 
-        return Ok(new WalletResponse(
-            Id: wallet.Id,
-            Balance: wallet.Balance,
-            Currency: wallet.Currency));
+        return Ok(walletResponse);
     }
 
     private static Dictionary<string, string[]> ToDictionary(ValidationResult validationResult) =>

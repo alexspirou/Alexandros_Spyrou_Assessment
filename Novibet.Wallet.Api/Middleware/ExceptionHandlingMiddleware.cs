@@ -1,5 +1,5 @@
 using Novibet.Wallet.Api.Exceptions;
-using Novibet.Wallet.Application.Features.Wallets.Exceptions;
+using Novibet.Wallet.Application.Exceptions;
 using System.Net;
 using System.Text.Json;
 

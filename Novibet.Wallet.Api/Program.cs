@@ -53,7 +53,6 @@ builder.Services.AddRateLimiter(options =>
 });
 
 
-
 builder.Services.AddControllers();
 builder.Configuration.AddUserSecrets<Program>();
 
@@ -81,7 +80,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseExceptionHandling();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 AddBackgroundJobs(app.Services, builder.Configuration, backGroundWorkerSettings.Enabled);
 
@@ -93,7 +92,6 @@ if (backGroundWorkerSettings.Enabled)
 app.UseRateLimiter();
 
 app.MapControllers();
-
 
 app.Run();
 
@@ -124,12 +122,12 @@ static void AddBackgroundJobs(IServiceProvider services, IConfiguration configur
         jobRegistration.RegisterCurrencyRatesJobs(cron ?? "* * * * * *");
         logger.LogInformation("Recurring CurrencyRatesJob registered.");
     }
-    bool scheduleAvailableCurrenciesForCacheEnabled = configuration.GetValue<bool>("AvailableCurrenciesForCacheJob:Enabled");
+    bool registerAvailableCurrenciesForCacheEnabled = configuration.GetValue<bool>("AvailableCurrenciesForCacheJob:Enabled");
 
-    if (scheduleAvailableCurrenciesForCacheEnabled)
+    if (registerAvailableCurrenciesForCacheEnabled)
     {
-        jobRegistration.ScheduleAvailableCurrenciesForCache();
-        logger.LogInformation("ScheduleAvailableCurrenciesForCacheJob has started.");
+        jobRegistration.RegisterAvailableCurrenciesForCache();
+        logger.LogInformation("AvailableCurrenciesForCacheJob has started.");
     }
 }
 

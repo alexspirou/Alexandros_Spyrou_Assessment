@@ -1,6 +1,8 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Novibet.Wallet.Application.Features.CurrencyRates;
+using Novibet.Wallet.Application.Features.CurrencyRates.Repositories;
+using Novibet.Wallet.Application.Features.CurrencyRates.Responses;
 using Novibet.Wallet.Infrastructure.Persistence;
 using System.Text;
 

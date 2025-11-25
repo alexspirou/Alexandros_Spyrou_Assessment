@@ -1,8 +1,6 @@
 using FluentAssertions;
 using Moq;
-using Novibet.Wallet.Application.Features.CurrencyRates;
-using Novibet.Wallet.Application.Features.Wallets;
-using Novibet.Wallet.Application.Features.Wallets.Exceptions;
+using Novibet.Wallet.Application.Exceptions;
 using Novibet.Wallet.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -23,7 +21,7 @@ public class GetBalanceAsyncTests : WalletServiceTestBase
             .ReturnsAsync((WalletEntity?)null);
 
         var sut = CreateSut();
-        var walletId = 42L;
+        var walletId = 42;
         var currency = "EUR";
 
         // Act
@@ -48,8 +46,9 @@ public class GetBalanceAsyncTests : WalletServiceTestBase
         var resultSame = await sut.GetBalanceAsync(wallet.Id, "EUR", CancellationToken.None);
 
         // Assert
-        resultNull.Should().Be(100m);
-        resultSame.Should().Be(100m);
+        resultNull.Balance.Should().Be(100m);
+        resultSame.Balance.Should().Be(100m);
+        resultSame.Currency.Should().Be("EUR");
         RatesRepoMock.Verify(r => r.GetCurrencyRates(It.IsAny<IEnumerable<string>>(), It.IsAny<DateOnly>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
@@ -78,6 +77,6 @@ public class GetBalanceAsyncTests : WalletServiceTestBase
         var result = await sut.GetBalanceAsync(wallet.Id, "EUR", CancellationToken.None);
 
         // Assert
-        result.Should().Be(100);
+        result.Balance.Should().Be(100m);
     }
 }

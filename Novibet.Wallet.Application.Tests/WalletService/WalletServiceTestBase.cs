@@ -1,7 +1,8 @@
 using Microsoft.Extensions.Time.Testing;
 using Moq;
-using Novibet.Wallet.Application.Features.CurrencyRates;
-using Novibet.Wallet.Application.Features.Wallets;
+using Novibet.Wallet.Application.Features.CurrencyRates.Repositories;
+using Novibet.Wallet.Application.Features.Wallets.Repositories;
+using Novibet.Wallet.Application.Features.Wallets.Services;
 using System;
 
 namespace Novibet.Wallet.Application.Tests.Services;

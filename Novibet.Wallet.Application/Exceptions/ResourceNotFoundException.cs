@@ -1,6 +1,6 @@
 using System.Net;
 
-namespace Novibet.Wallet.Application.Features.Wallets.Exceptions;
+namespace Novibet.Wallet.Application.Exceptions;
 
 public class ResourceNotFoundException : BaseWalletException
 {

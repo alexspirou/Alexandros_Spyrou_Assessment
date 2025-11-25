@@ -1,6 +1,6 @@
 using Novibet.Wallet.Domain.Entities;
 
-namespace Novibet.Wallet.Application.Features.Wallets;
+namespace Novibet.Wallet.Application.Features.Wallets.Repositories;
 
 public interface IWalletRepository
 {
