@@ -41,6 +41,9 @@ _ReSharper*/
 *.DotSettings.user
 .idea/
 
+# Environment files
+.env
+
 # Tooling databases
 *.opendb
 *.dbmdl

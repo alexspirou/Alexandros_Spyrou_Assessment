@@ -1,0 +1,25 @@
+version: "3.9"
+
+name: novibet-wallet
+
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: novibet-wallet-sqlserver
+    hostname: novibet-wallet-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "${SA_PASSWORD}"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql_data:/var/opt/mssql
+
+  redis:
+    image: redis:7
+    container_name: novibet-wallet-redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  sql_data:
